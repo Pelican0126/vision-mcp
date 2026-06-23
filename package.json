@@ -1,0 +1,47 @@
+{
+  "name": "vision-mcp",
+  "version": "0.1.0",
+  "description": "通用视觉 MCP —— 给所有看不见图的编码 agent 装眼睛（OpenAI 兼容多后端 + agentic 自动缩放）",
+  "type": "module",
+  "bin": {
+    "vision-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "vision",
+    "vlm",
+    "glm",
+    "ocr"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "sharp": "^0.33.5",
+    "zod": "^3.23.8"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
