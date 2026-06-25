@@ -125,6 +125,12 @@ Instead, let the agent **pull the image itself** so it never reaches the text mo
 
 Also: the **vision backend** (`VISION_MODEL`) must itself be a **vision** model — a text-only model like `glm-5.2` can't be the backend either (use Doubao-vision / GLM-4.6V / a `*-vision` model).
 
+**Why DeepSeek "just works" but GLM-5.2 400s (both are blind):** it's the *upstream endpoint*, not the model. Volcano's GLM-5.2 endpoint strictly rejects any request that contains an image; DeepSeek's endpoint silently ignores it and lets the model proceed to call this MCP. ZCode embeds the pasted image for both and has **no per-model "vision" toggle** — so there is no ZCode setting that fixes it; you simply avoid pasting and pull the image via the tool instead.
+
+**Verified end-to-end** (ZCode + GLM-5.2 host + mimo-v2.5 backend): screenshot to clipboard → ask *"look at the clipboard image and diagnose"* → GLM-5.2 called `image_analysis(image="clipboard")` → mimo read `ERR-4096: NPE app.ts:42` verbatim and counted the chart bars. No 400.
+
+**ZCode tips:** turn off **计划模式 (Plan mode)** when you want it to actually run the tool (in Plan mode it only plans); on the tool-approval prompt choose **"始终允许本项目" (Always allow this project)** so it stops asking each time.
+
 ### Tools
 
 | Tool | Purpose |
@@ -313,6 +319,12 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - **`image: "latest"`**：把 `VISION_DROP_DIR` 设成截图目录，MCP 取里面最新的图。
 
 另外：**视觉后端**（`VISION_MODEL`）本身也必须是**视觉模型**——纯文本模型（如 `glm-5.2`）不能当后端（用 Doubao-vision / GLM-4.6V / 带 `-vision` 的模型）。
+
+**为什么 DeepSeek"能用"而 GLM-5.2 报 400（两个都是瞎子）：** 区别在**上游端点**，不在模型。火山的 GLM-5.2 端点严格拒绝任何带图的请求；DeepSeek 端点则静默忽略、让模型继续去调本 MCP。ZCode 对两者都会嵌入粘贴的图、且**没有按模型的"视觉"开关**——所以 ZCode 里没有任何设置能修这个，你只能不粘贴、改用工具把图取过来。
+
+**已端到端验证**（ZCode + GLM-5.2 宿主 + mimo-v2.5 后端）：截图到剪贴板 → 说*"看剪贴板里的图、诊断报错"* → GLM-5.2 调用 `image_analysis(image="clipboard")` → mimo 逐字读出 `ERR-4096: NPE app.ts:42` 并数对柱子。**全程不再 400**。
+
+**ZCode 小贴士：** 想让它真正执行工具时，关掉**计划模式**（计划模式下只会"计划"不执行）；工具授权弹框里选**"始终允许本项目"**，就不用每次确认。
 
 ### 工具
 

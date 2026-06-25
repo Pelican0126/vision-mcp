@@ -1,6 +1,6 @@
 {
   "name": "vision-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "通用视觉 MCP —— 给所有看不见图的编码 agent 装眼睛（OpenAI 兼容多后端 + agentic 自动缩放）",
   "type": "module",
   "bin": {

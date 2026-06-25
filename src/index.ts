@@ -11,7 +11,7 @@ import { makeHandler } from "./tools/handler.js";
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const provider = new OpenAICompatibleProvider(cfg);
-  const server = new McpServer({ name: "vision-mcp", version: "0.1.0" });
+  const server = new McpServer({ name: "vision-mcp", version: "0.2.0" });
 
   for (const def of TOOL_DEFS) {
     server.registerTool(
