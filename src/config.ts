@@ -15,6 +15,8 @@ export interface Config {
   model: string;
   profile: ProfileName;
   allowedDirs: string[];
+  /** Directory scanned by the `latest` pseudo-source (newest image wins). */
+  dropDir?: string;
   allowUrlPassthrough: boolean;
   maxZoomRounds: number;
   maxEdgePx: number;
@@ -96,6 +98,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     model: str(env, "VISION_MODEL") ?? PROFILE_DEFAULT_MODEL[profile],
     profile,
     allowedDirs,
+    dropDir: str(env, "VISION_DROP_DIR") ? path.resolve(str(env, "VISION_DROP_DIR")!) : undefined,
     allowUrlPassthrough: bool(env, "VISION_ALLOW_URL_PASSTHROUGH") ?? false,
     maxZoomRounds: int(env, "VISION_MAX_ZOOM_ROUNDS", 3),
     maxEdgePx: int(env, "VISION_MAX_EDGE_PX", 1568),

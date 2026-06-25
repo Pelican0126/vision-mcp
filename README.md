@@ -113,6 +113,18 @@ npx @modelcontextprotocol/inspector node dist/index.js
 
 Or run the bundled scripts: `node scripts/smoke.mjs` (lists tools), `KEY=... node scripts/livetest.mjs` (drives all 8 tools end-to-end).
 
+### Text-only hosts (e.g. ZCode + GLM-5.2): give a path, don't paste
+
+If your host coding model is **text-only** (GLM-5.2, DeepSeek, …), do **not paste/drag an image into the chat** — the host attaches it to the model's turn and the provider rejects it (`400 Model only support text input`). DeepSeek silently drops the image instead (looks fine, but it never saw anything). vision-mcp runs *downstream* of the host, so it cannot intercept a pasted image.
+
+Instead, let the agent **pull the image itself** so it never reaches the text model — three ways:
+
+- **File path** (zero setup): save the image and reference its path — *"use `diagnose_error_screenshot` on `D:\shots\err.png`"*. The host sees only the text path; the MCP reads the file.
+- **`image: "clipboard"`**: screenshot to the clipboard (Win+Shift+S) or copy an image, then say *"read the error image on my clipboard"*. The MCP reads the OS clipboard server-side (built-in PowerShell on Windows — no dependency).
+- **`image: "latest"`**: set `VISION_DROP_DIR` to a screenshots folder; the MCP grabs the newest image there.
+
+Also: the **vision backend** (`VISION_MODEL`) must itself be a **vision** model — a text-only model like `glm-5.2` can't be the backend either (use Doubao-vision / GLM-4.6V / a `*-vision` model).
+
 ### Tools
 
 | Tool | Purpose |
@@ -289,6 +301,18 @@ npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 或用自带脚本：`node scripts/smoke.mjs`（列工具）、`KEY=... node scripts/livetest.mjs`（全 8 工具端到端）。
+
+### 文本宿主（如 ZCode + GLM-5.2）：给路径，别粘贴
+
+如果你的宿主编码模型是**纯文本**（GLM-5.2、DeepSeek……），**别把图粘贴/拖进对话**——宿主会把图塞进模型的 turn，提供商直接拒绝（`400 Model only support text input`）；DeepSeek 则**静默丢图**（看着没报错，其实没看见）。vision-mcp 在宿主**下游**，拦不住已粘贴的图。
+
+正确做法：让 agent **自己把图取过来**，图永不进文本模型——三条路：
+
+- **文件路径**（零配置）：把图存成文件、给路径——「用 `diagnose_error_screenshot` 看 `D:\shots\err.png`」。宿主只见文字路径，MCP 读文件。
+- **`image: "clipboard"`**：截图到剪贴板（Win+Shift+S）或复制一张图，然后说「看剪贴板里的报错图」。MCP 在 server 端读系统剪贴板（Windows 用内置 PowerShell，零依赖）。
+- **`image: "latest"`**：把 `VISION_DROP_DIR` 设成截图目录，MCP 取里面最新的图。
+
+另外：**视觉后端**（`VISION_MODEL`）本身也必须是**视觉模型**——纯文本模型（如 `glm-5.2`）不能当后端（用 Doubao-vision / GLM-4.6V / 带 `-vision` 的模型）。
 
 ### 工具
 

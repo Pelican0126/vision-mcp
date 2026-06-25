@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Config } from "../config.js";
 import type { VisionImageRef } from "../provider/types.js";
+import { readClipboardImage } from "./clipboard.js";
 import {
   assertPathAllowed,
   assertUrlSafe,
@@ -75,6 +77,16 @@ export async function loadMedia(input: string, cfg: Config): Promise<LoadedMedia
 }
 
 async function readBytes(input: string, cfg: Config): Promise<RawBytes> {
+  // Pseudo-sources that pull the image server-side, so a text-only host never
+  // receives image bytes (it only ever sends the literal "clipboard"/"latest").
+  const keyword = input.toLowerCase();
+  if (keyword === "clipboard" || keyword === "clip") {
+    return { buffer: await readClipboardImage() };
+  }
+  if (keyword === "latest") {
+    return { buffer: await readLatestFromDropDir(cfg) };
+  }
+
   const dataMatch = DATA_URI_RE.exec(input);
   if (dataMatch) {
     const declaredMime = dataMatch[1] || undefined;
@@ -96,6 +108,33 @@ async function readBytes(input: string, cfg: Config): Promise<RawBytes> {
   const safe = assertPathAllowed(filePath, cfg.allowedDirs);
   const buffer = await fs.readFile(safe);
   return { buffer };
+}
+
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|bmp|webp)$/i;
+
+/** Read the most-recently-modified image file in VISION_DROP_DIR. */
+async function readLatestFromDropDir(cfg: Config): Promise<Buffer> {
+  if (!cfg.dropDir) {
+    throw new Error("未配置 VISION_DROP_DIR，无法使用 'latest'（请设置该环境变量指向截图目录）。");
+  }
+  let entries: string[];
+  try {
+    entries = await fs.readdir(cfg.dropDir);
+  } catch {
+    throw new Error(`VISION_DROP_DIR 不可读：${cfg.dropDir}`);
+  }
+  const stats = await Promise.all(
+    entries
+      .filter((e) => IMAGE_EXT_RE.test(e))
+      .map(async (e) => {
+        const p = path.join(cfg.dropDir!, e);
+        const st = await fs.stat(p).catch(() => null);
+        return st?.isFile() ? { p, mtime: st.mtimeMs } : null;
+      }),
+  );
+  const files = stats.filter((s): s is { p: string; mtime: number } => s !== null).sort((a, b) => b.mtime - a.mtime);
+  if (files.length === 0) throw new Error(`VISION_DROP_DIR 里没有图片：${cfg.dropDir}`);
+  return fs.readFile(files[0]!.p);
 }
 
 async function downloadUrl(url: string, cfg: Config): Promise<RawBytes> {

@@ -135,7 +135,11 @@ export class OpenAICompatibleProvider implements VisionProvider {
     }
     if (!res.ok) {
       const snippet = (await res.text().catch(() => "")).slice(0, 500);
-      throw new Error(`视觉后端返回 ${res.status} ${res.statusText}：${snippet}`);
+      const hint =
+        res.status >= 400 && res.status < 500 && /text input|not support image|InvalidParameter/i.test(snippet)
+          ? "（提示：配置的 VISION_MODEL 可能是纯文本模型，请换成视觉模型）"
+          : "";
+      throw new Error(`视觉后端返回 ${res.status} ${res.statusText}：${snippet}${hint}`);
     }
     return res.json();
   }

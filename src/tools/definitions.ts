@@ -31,7 +31,11 @@ const common = {
 };
 
 const imageField = {
-  image: z.string().describe("图片：本地路径 / file:// / http(s):// / data: URI"),
+  image: z
+    .string()
+    .describe(
+      "图片：本地路径 / file:// / http(s):// / data: URI / 'clipboard'（读系统剪贴板，文本宿主推荐）/ 'latest'（VISION_DROP_DIR 里最新图）",
+    ),
 };
 
 const OUTPUT_SHAPE: ZodRawShape = {
